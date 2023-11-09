@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+model Rol {
+  idrol        Int     @id @default(autoincrement())
+  rol          String
+  descripcion  String
+  clientes     Cliente[]
+}
+
+model Cliente {
+  CI          Int        @id @unique
+  idrol       Int
+  nombre      String
+  apellido    String
+  telefono    String
+  correo      String
+  contrasena  String
+  rol         Rol       @relation(fields: [idrol], references: [idrol])
+  comentarios ComentarioProducto[]
+  direcciones Direccion[]
+  pedido      Pedido[]
+}
+
+model ComentarioProducto {
+  idcomentario Int      @id @default(autoincrement())
+  idproducto   Int
+  CI           Int
+  comentario   String
+  producto     Producto @relation(fields: [idproducto], references: [idproducto])
+  cliente      Cliente  @relation(fields: [CI], references: [CI])
+}
+model Direccion {
+  id_direccion  Int         @id @default(autoincrement())
+  CI            Int
+  id_ciudad     Int
+  id_referencia Int
+  cliente       Cliente     @relation(fields: [CI], references: [CI])
+  ciudad        Ciudad      @relation(fields: [id_ciudad], references: [id_ciudad])
+  referencia    Referencia  @relation(fields: [id_referencia], references: [id_referencia])
+}
+
+model Ciudad {
+  id_ciudad Int    @id @default(autoincrement())
+  ciudad    String
+  direcciones Direccion[]
+}
+
+model Referencia {
+  id_referencia  Int     @id @default(autoincrement())
+  calle_principal String
+  numero_casa String
+  descripcion String
+  direcciones Direccion[]
+}
+
+model Producto {
+  idproducto       Int           @id @default(autoincrement())
+  idCategoria      Int
+  nombre           String  
+  descripcion      String?
+  precio           Float
+  marca            Marca[]
+  fotos            Foto[]
+  comentarios       ComentarioProducto[]
+  detallesPedido    DetallePedido[]
+  categoria         Categoria     @relation(fields: [idCategoria], references: [idCategoria])
+}
+
+model Foto {
+  idfoto      Int     @id @default(autoincrement())
+  idproducto  Int
+  archivo     String  
+  descripcion  String?
+  producto    Producto @relation(fields: [idproducto], references: [idproducto])
+}
+
+model Marca {
+  idmarca     Int     @id @default(autoincrement())
+  idproducto  Int
+  nombre      String  
+  producto    Producto @relation(fields: [idproducto], references: [idproducto])
+}
+
+
+//---------------------------------------------------------------
+model Categoria {
+  idCategoria     Int      @id @default(autoincrement())
+  descuento       Int
+  precio          Float
+  nombreCategoria String
+
+  // Relación con SubCategoria
+  subCategoria    SubCategoria?   @relation(fields: [idSubCategoria], references: [idSubCategoria])
+  idSubCategoria  Int?
+
+  // Relación con Caracteristica
+  caracteristica  Caracteristica? @relation(fields: [idCaracteristica], references: [idCaracteristica])
+  idCaracteristica Int?
+
+  // Relación con Producto
+  productos       Producto[]
+}
+
+model SubCategoria {
+  idSubCategoria Int    @id @default(autoincrement())
+  color          String
+  talla          String
+  descripcion    String
+
+  // Relación inversa con Categoria
+  categorias     Categoria[]
+}
+
+model Caracteristica {
+  idCaracteristica     Int     @id @default(autoincrement())
+  nombreCaracteristica String
+  descripcionCaracteristica String
+
+  // Relación inversa con Categoria
+  categorias           Categoria[]
+}
+
+model Repartidor {
+  id_repartidor  Int         @id @default(autoincrement())
+  Nombre         String
+  Telefono       String
+  Correo         String
+  Cedula         String
+  pedidos        Pedido[]
+}
+
+model Pedido {
+  idpedido         Int           @id @default(autoincrement())
+  CI               Int
+  id_repartidor    Int
+  Fecha            DateTime
+  Total            Float
+  entregado        Boolean
+  direccion_envio  String
+  repartidor       Repartidor    @relation(fields: [id_repartidor], references: [id_repartidor])
+  cliente          Cliente       @relation(fields: [CI], references: [CI])
+  detallesPedido   DetallePedido[]
+}
+
+model DetallePedido {
+  iddetalle   Int   @id @default(autoincrement())
+  idpedido    Int
+  idproducto  Int
+  Cantidad    Int
+  Precio      Float
+  Subtotal    Float
+  Costo_envio Float
+  pedido      Pedido  @relation(fields: [idpedido], references: [idpedido]) // Relación muchos a uno con Pedido
+  producto    Producto @relation(fields: [idproducto], references: [idproducto])
+}
