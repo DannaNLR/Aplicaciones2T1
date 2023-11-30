@@ -1,0 +1,37 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+model Rol {
+  idrol        Int     @id @default(autoincrement())
+  rol          String
+  descripcion  String
+  clientes     Cliente[]
+}
+
+model Cliente {
+  CI          Int        @id @unique
+  idrol       Int
+  nombre      String
+  apellido    String
+  telefono    String
+  correo      String
+  contrasena  String
+  rol         Rol       @relation(fields: [idrol], references: [idrol])
+  comentarios ComentarioProducto[]
+}
+
+model ComentarioProducto {
+  idcomentario Int      @id @default(autoincrement())
+  CI           Int
+  comentario   String
+  cliente      Cliente  @relation(fields: [CI], references: [CI])
+}
